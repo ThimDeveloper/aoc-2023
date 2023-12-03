@@ -5,9 +5,12 @@ from aoc.day4.lotterymachine import LotteryMachine
 
 if __name__ == "__main__":
     # Day 1
-    # decoder = ElfCoordinateDecoder()
-    # file_name = "puzzle.txt"
-    # print(decoder.decode(file_name))
+    decoder = ElfCoordinateDecoder()
+    file_name = "puzzle.txt"
+    print(ElfCoordinateDecoder.__name__)
+    print(decoder.decode(file_name))
+
+    # Day 3
 
     # Day 2
     # gamemachine = GameMachine()
