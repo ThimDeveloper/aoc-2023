@@ -11,4 +11,4 @@ if __name__ == "__main__":
     # Day 2
     gamemachine = GameMachine()
     file_name = "games.txt"
-    print(gamemachine.evaluate_games(file_name))
+    print(gamemachine.evaluate_games(file_name, operation="power"))

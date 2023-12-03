@@ -46,7 +46,13 @@ def test_invalid_game() -> None:
     assert game.is_game_possible(condition) is False
 
 
-def test_evaluate_games(gamemachine) -> None:
+def test_evaluate_games_sum_of_ids(gamemachine) -> None:
     file_name = "test_games.txt"
-    possible_games = gamemachine.evaluate_games(file_name)
+    possible_games = gamemachine.evaluate_games(file_name, operation="valid")
     assert possible_games == 8
+
+
+def test_evaluate_games_sum_of_set_powers(gamemachine) -> None:
+    file_name = "test_games.txt"
+    possible_games = gamemachine.evaluate_games(file_name, operation="power")
+    assert possible_games == 2286

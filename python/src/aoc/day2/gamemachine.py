@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import List, Literal, Optional
 from aoc.shared.io import FileUtility
 import dataclasses
 import regex as re
@@ -31,6 +31,12 @@ class Game:
 
     def is_game_possible(self, condition: Condition) -> bool:
         return all([self._is_set_possible(set, condition) for set in self.sets])
+
+    def minimum_set_power(self) -> int:
+        max_red = max([set.red for set in self.sets if set.red != 0])
+        max_green = max([set.green for set in self.sets if set.green != 0])
+        max_blue = max([set.blue for set in self.sets if set.blue != 0])
+        return max_red * max_blue * max_green
 
     def __post_init__(self) -> None:
         self.id = int(self.id_str)
@@ -75,11 +81,17 @@ class GameMachine(FileUtility):
     def sum_of_valid_games(self, games: List[Game]) -> int:
         return sum([game.id for game in games if game.is_game_possible(self.condition)])
 
-    def evaluate_games(self, file_name: str) -> int:
+    def sum_of_set_powers(self, games: List[Game]) -> int:
+        return sum([game.minimum_set_power() for game in games])
+
+    def evaluate_games(self, file_name: str, operation: Literal["valid", "power"]) -> int:
         if os.path.exists(self.output):
             os.remove(self.output)
 
         file_path = os.path.join(self.assets_path, file_name)
         with open(file_path, "r") as fd:
             games = [self._parse_game(line) for line in fd.readlines()]
-            return self.sum_of_valid_games(games)
+            if operation == "valid":
+                return self.sum_of_valid_games(games)
+            elif operation == "power":
+                return self.sum_of_set_powers(games)
