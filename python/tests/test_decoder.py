@@ -1,6 +1,6 @@
 import os
 import pytest
-from aoc.day_1.decoder import ElfCoordinateDecoder
+from aoc.day1.decoder import ElfCoordinateDecoder
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-from aoc.day_1.decoder import ElfCoordinateDecoder
+from aoc.day1.decoder import ElfCoordinateDecoder
 
 
 if __name__ == "__main__":

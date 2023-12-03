@@ -22,6 +22,9 @@ install:
 .PHONY: setup
 setup: clean remove-env env install
 
+.PHONY: run
+run:
+	python src/main.py
 
 .PHONY: format
 format:
