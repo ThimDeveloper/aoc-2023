@@ -1,5 +1,5 @@
 import os
-import re
+import regex as re
 from typing import List
 
 
@@ -12,6 +12,8 @@ class ElfCoordinateDecoder:
         )
         self.lettered_digit_pattern = re.compile(r"(\w)+")
         self.output = self._get_file_path(output_file_name)
+        self.only_digit_pattern = re.compile(r"(\d){1}")
+
         self.spelled_digit_pattern = re.compile(
             r"(one)|(two)|(three)|(four)|(five)|(six)|(seven)|(eight)|(nine)"
         )
@@ -44,11 +46,16 @@ class ElfCoordinateDecoder:
             return self.digit_mapping[digit]
         return digit
 
-    def _parse_line(self, line: str) -> List[str]:
+    def _parse_line_digit(self, line: str) -> List[str]:
+        digits: List[str] = self.only_digit_pattern.findall(line, overlapped=True)
+        return digits
+
+    def _parse_line_spelled_and_digit(self, line: str) -> List[str]:
         digits: List[str] = [
             self._conditionally_transform_digit(digit)
             for digit in [
-                list(filter(None, match))[0] for match in self.digit_pattern.findall(line)
+                list(filter(None, match))[0]
+                for match in self.digit_pattern.findall(line, overlapped=True)
             ]
         ]
         return digits
@@ -59,7 +66,7 @@ class ElfCoordinateDecoder:
         return line_digit
 
     def _decode_line(self, line: str) -> int:
-        digits = self._parse_line(line)
+        digits = self._parse_line_spelled_and_digit(line)
         line_digit = self._calculate_line_sum(digits)
         with open(self.output, "+a") as fd:
             fd.write(f"{line} - {digits} - {line_digit}\n")
