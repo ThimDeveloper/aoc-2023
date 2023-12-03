@@ -1,17 +1,15 @@
 import os
 import regex as re
 from typing import List
+from aoc.shared.io import FileUtility
 
 
-class ElfCoordinateDecoder:
+class ElfCoordinateDecoder(FileUtility):
     def __init__(
         self, assets_directory: str = "assets", output_file_name: str = "output.txt"
     ) -> None:
-        self.assets_path = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), assets_directory
-        )
+        super().__init__(__file__, assets_directory, output_file_name)
         self.lettered_digit_pattern = re.compile(r"(\w)+")
-        self.output = self._get_file_path(output_file_name)
         self.only_digit_pattern = re.compile(r"(\d){1}")
 
         self.spelled_digit_pattern = re.compile(
@@ -34,9 +32,6 @@ class ElfCoordinateDecoder:
 
     def _is_spelled_out_digit(self, digit: str) -> bool:
         return bool(self.spelled_digit_pattern.match(digit))
-
-    def _get_file_path(self, file_name: str) -> str:
-        return os.path.join(self.assets_path, file_name)
 
     def _parse_int(self, digit_str: str) -> int:
         return int(digit_str)
