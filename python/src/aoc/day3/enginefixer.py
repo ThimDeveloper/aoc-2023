@@ -1,7 +1,14 @@
 from pprint import pprint
-from typing import List
+import dataclasses
+from typing import List, Tuple
 from aoc.shared.io import FileUtility
 import regex as re
+
+
+@dataclasses.dataclass
+class EngineNode:
+    value: str
+    adjecent: List["EngineNode"] = dataclasses.field(default_factory=[])
 
 
 class EngineFixer(FileUtility):
@@ -11,18 +18,31 @@ class EngineFixer(FileUtility):
         output_file_name: str = "output.txt",
     ) -> None:
         super().__init__(__file__, assets_directory, output_file_name)
-        self.symbol_pattern = re.compile(r"(\d+)|(\D){1}")
+        self.pattern = re.compile(r"(\d+)|(\D){1}")
+        self.symbol_pattern = re.compile(r"[\D^\.]")
+
+    def _filter_regex_matches(self, value: Tuple[str, str]) -> str:
+        return list(filter(None, value))[0]
+
+    def _generate_matrix(self, lines: List[str]) -> List[List[str]]:
+        return [
+            [self._filter_regex_matches(matches) for matches in self.pattern.findall(row)]
+            for row in lines
+        ]
+
+    def _generate_engine_nodes(self, matrix: List[List[str]]):
+        adjecency_matrix = [[0, 0 + 1, 0 + 2], [0, 0 + 1, 0 + 2], [0, 0 + 1, 0 + 2]]
+        print(matrix[adjecency_matrix])
+
+        for i in range(len(matrix) - 3):
+            adjecent_elements = []
+            for j in range(len(matrix[i]) - 3):
+                if i > 0 and j > 0:
+                    adjecent_elements.extend([matrix[i-1][j], matrix[i][j+1]])
 
     def sum_of_parts(self, file_name: str) -> int:
         file_path = self._get_file_path(file_name)
         with open(file_path, "r") as fd:
             lines = [line.replace("\n", "") for line in fd.readlines()]
-            symbol_matrix = []
-            for idx_row, row in enumerate(lines):
-                symbol_matrix.append([])
-                for column_value in self.symbol_pattern.findall(row):
-                    filtered_column_value = list(filter(None, column_value))[0]
-                    symbol_matrix[idx_row].append(filtered_column_value)
-            # [x for y in collection for x in y] # [A for B in C for D in E]
-            pprint(symbol_matrix)
-            return symbol_matrix
+            matrix = self._generate_matrix(lines)
+            return matrix
