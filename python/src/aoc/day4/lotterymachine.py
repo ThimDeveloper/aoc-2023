@@ -14,6 +14,8 @@ class Card:
         count_of_winning_numbers = len(
             list(filter(lambda number: number in self.winning_numbers, self.card_numbers))
         )
+        if count_of_winning_numbers == 0:
+            return 0
         return pow(2, (count_of_winning_numbers - 1))
 
 
@@ -24,22 +26,36 @@ class LotteryMachine(FileUtility):
         output_file_name: str = "output.txt",
     ) -> None:
         super().__init__(__file__, assets_directory, output_file_name)
-        self.card_pattern = re.compile(r"(?:Card \d\: )(.+)")
-        self.winning_pattern = re.compile(r"(\d+)")
+        self.card_pattern = re.compile(r"(?:Card\s+\d+\: )(.+)")
+        self.number_pattern = re.compile(r"(\S)+")
 
     def _parse_card(self, line: str) -> Card:
-        numbers = (
-            str(self.card_pattern.findall(line)).replace("  ", ",").replace(" ", ",").split("|")
-        )
-        winning_numbers = numbers[0].split(",")
-        card_numbers = numbers[1].split(",")
+        numbers = str(self.card_pattern.findall(line)[0])
+        line_break_reached = False
+        winning_numbers = []
+        card_numbers = []
+        for m in self.number_pattern.finditer(numbers):
+            symbol = m.group()
+            if symbol == "|":
+                line_break_reached = True
+                continue
+            if not line_break_reached:
+                winning_numbers.append(symbol)
+            else:
+                card_numbers.append(symbol)
         card = Card(winning_numbers, card_numbers)
         return card
 
-    def count_points(self, file_name: str) -> int:
+    def _count_points(self, cards: List[Card]) -> int:
+        return sum([card.points() for card in cards])
+
+    def read_cards(self, file_name: str) -> int:
         if os.path.exists(self.output):
             os.remove(self.output)
 
         file_path = os.path.join(self.assets_path, file_name)
         with open(file_path, "r") as fd:
             cards = [self._parse_card(line) for line in fd.readlines()]
+
+        points = self._count_points(cards)
+        return points
