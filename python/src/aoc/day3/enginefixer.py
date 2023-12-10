@@ -6,11 +6,26 @@ import regex as re
 
 
 @dataclasses.dataclass
+class Coordinates:
+    x: int
+    y: int
+
+
+@dataclasses.dataclass
 class EngineNode:
     value: str
+    coordinates: Coordinates
     x: int
     y: int
     adjecent: List["EngineNode"] = dataclasses.field(default_factory=[])
+
+    def should_count_number(self) -> bool:
+        if list(filter(lambda x: not x.value.isdigit(), self.adjecent)) > 0:
+            return True
+        return False
+
+    def possible_neighbour_coodinates(self) -> List[Coordinates]:
+        pass
 
 
 class EngineFixer(FileUtility):
@@ -33,10 +48,13 @@ class EngineFixer(FileUtility):
                 self._filter_regex_matches(matches) for matches in self.pattern.findall(row)
             ):
                 if symbol != ".":
-                    self.nodes.append(EngineNode(symbol, x, y, []))
+                    coordinates = Coordinates(x, y)
+                    self.nodes.append(EngineNode(symbol, coordinates, []))
         return self.nodes
 
-    def _generate_adjency_list(self, matrix: List[List[str]]):
+    def _generate_adjency_lists(self):
+        for node in self.nodes:
+            print(node.coordinates)
         pass
 
     def sum_of_parts(self, file_name: str) -> int:
