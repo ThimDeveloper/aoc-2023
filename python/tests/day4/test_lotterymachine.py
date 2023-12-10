@@ -16,5 +16,9 @@ def test_parse_line(lotterymachine) -> None:
 
 
 def test_count_points(lotterymachine) -> None:
-    points = lotterymachine.read_cards("test_cards.txt")
+    points = lotterymachine.read_cards("test_cards.txt", operation="points")
     assert points == 13
+
+def test_count_cards_total(lotterymachine) -> None:
+    total_cards = lotterymachine.read_cards("test_cards.txt", operation="cards")
+    print(total_cards)

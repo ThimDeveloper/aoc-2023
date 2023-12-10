@@ -1,12 +1,13 @@
 import dataclasses
 import os
-from typing import List
+from typing import List, Literal
 import regex as re
 from aoc.shared.io import FileUtility
 
 
 @dataclasses.dataclass
 class Card:
+    id_string: str
     winning_numbers: List[str]
     card_numbers: List[str]
 
@@ -17,6 +18,12 @@ class Card:
         if count_of_winning_numbers == 0:
             return 0
         return pow(2, (count_of_winning_numbers - 1))
+    
+    def total_cards(self, cards: List["Card"]) -> int:
+        pass
+
+    def __post_init__(self) -> None:
+        self.id = str(self.id_string)
 
 
 class LotteryMachine(FileUtility):
@@ -27,6 +34,7 @@ class LotteryMachine(FileUtility):
     ) -> None:
         super().__init__(__file__, assets_directory, output_file_name)
         self.card_pattern = re.compile(r"(?:Card\s+\d+\: )(.+)")
+        self.card_id_patterN = re.compile(r"(?:Card\s+)(\d+)(?:\:)")
         self.number_pattern = re.compile(r"(\S)+")
 
     def _parse_card(self, line: str) -> Card:
@@ -49,7 +57,10 @@ class LotteryMachine(FileUtility):
     def _count_points(self, cards: List[Card]) -> int:
         return sum([card.points() for card in cards])
 
-    def read_cards(self, file_name: str) -> int:
+    def _count_cards_total(self, cards: List[Card]) -> int:
+        pass
+
+    def read_cards(self, file_name: str, operation: Literal["points", "cards"]) -> int:
         if os.path.exists(self.output):
             os.remove(self.output)
 
@@ -57,5 +68,8 @@ class LotteryMachine(FileUtility):
         with open(file_path, "r") as fd:
             cards = [self._parse_card(line) for line in fd.readlines()]
 
-        points = self._count_points(cards)
-        return points
+        if operation == "points":
+            return self._count_points(cards)
+        if operation == "cards":
+            return self._count_cards_total(cards)
+        return ValueError(f"No opeartion of type {operation}")
