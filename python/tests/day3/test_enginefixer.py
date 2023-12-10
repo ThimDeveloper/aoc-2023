@@ -10,5 +10,5 @@ def enginefixer() -> EngineFixer:
 
 def test_sum_of_parts(enginefixer) -> None:
     file_name = "test_schematics.txt"
-    matrix = enginefixer.sum_of_parts(file_name)
-    pprint(matrix)
+    nodes = enginefixer.sum_of_parts(file_name)
+    # pprint(nodes[0:3])
