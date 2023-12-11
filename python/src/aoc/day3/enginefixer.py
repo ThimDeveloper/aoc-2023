@@ -62,21 +62,27 @@ class EngineFixer(FileUtility):
     ) -> None:
         super().__init__(__file__, assets_directory, output_file_name)
         self.pattern = re.compile(r"(\d+)|(\D){1}")
-        self.symbol_pattern = re.compile(r"[\D^\.]")
+        self.single_symbol_pattern = re.compile(r"(\d){1}|(\D){1}")
         self.nodes: List[EngineNode] = []
 
     def _filter_regex_matches(self, value: Tuple[str, str]) -> str:
         return list(filter(None, value))[0]
 
     def _generate_nodes(self, lines: List[str]) -> List[List[str]]:
+        # y = 0
+        # x = 0
         for y, row in enumerate(lines):
             for x, symbol in enumerate(
                 self._filter_regex_matches(matches) for matches in self.pattern.findall(row)
             ):
                 if symbol != ".":
-                    coordinates = [Coordinates(x + i, y) for i in range(len(symbol))]
+                    range_of_symbol = len(symbol)
+                    coordinates = [Coordinates(x + i, y) for i in range(range_of_symbol)]
                     id = uuid.uuid4()
                     self.nodes.append(EngineNode(id, symbol, coordinates, []))
+                    if range_of_symbol > 1:
+                        x += range_of_symbol
+                    
         return self.nodes
 
     def _generate_adjency_lists(self):
