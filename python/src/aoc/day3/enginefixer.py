@@ -1,6 +1,6 @@
 from pprint import pprint
 import dataclasses
-from typing import List, Tuple
+from typing import List, Literal, Tuple
 from aoc.shared.io import FileUtility
 import regex as re
 import uuid
@@ -26,13 +26,22 @@ class EngineNode:
     def is_digit(self) -> bool:
         return self.value.isdigit()
 
-    def is_star(self) -> bool:
+    def is_gear(self) -> bool:
         return self.value == "*"
 
     def should_count_number(self) -> bool:
-        if self.is_digit() and list(filter(lambda x: not x.isdigit(), self.neighbour_values)) > 0:
+        if self.is_digit() and len(list(filter(lambda x: not x.isdigit(), self.neighbour_values))) > 0:
             return True
         return False
+    
+    def should_count_gear_ratio(self) -> bool:
+        if self.is_gear() and len(list(filter(lambda x: x.isdigit(), self.neighbour_values))) == 2:
+            return True
+        return False
+    
+    def calculate_gear_ratio(self) -> int:
+        values = list(filter(lambda x: x.isdigit(), self.neighbour_values))
+        return int(values[0])*int(values[1])
 
     @staticmethod
     def calculate_eucludian_distance(own_coordinates: Coordinates, coordinates: Coordinates) -> int:
@@ -69,34 +78,42 @@ class EngineFixer(FileUtility):
         return list(filter(None, value))[0]
 
     def _generate_nodes(self, lines: List[str]) -> List[List[str]]:
-        # y = 0
-        # x = 0
-        for y, row in enumerate(lines):
-            for x, symbol in enumerate(
+        y = 0
+        x = 0
+        for row in lines:
+            x = 0
+            for symbol in [
                 self._filter_regex_matches(matches) for matches in self.pattern.findall(row)
-            ):
+            ]:  
                 if symbol != ".":
                     range_of_symbol = len(symbol)
                     coordinates = [Coordinates(x + i, y) for i in range(range_of_symbol)]
                     id = uuid.uuid4()
                     self.nodes.append(EngineNode(id, symbol, coordinates, []))
                     if range_of_symbol > 1:
-                        x += range_of_symbol
-                    
+                        x += (range_of_symbol - 1)
+                x += 1
+            y += 1
+
         return self.nodes
 
     def _generate_adjency_lists(self):
-        for node in self.nodes[0:1]:
-            node_neighbour_values = node.find_neighbours(self.nodes)
-            node.neighbour_values = node_neighbour_values
-            pprint(node)
-            pprint("neighbours")
-            pprint(node_neighbour_values)
+        [node.find_neighbours(self.nodes) for node in self.nodes]
 
-    def sum_of_parts(self, file_name: str) -> List[EngineNode]:
+    def _get_valid_numbers(self):
+        return sum([int(node.value) for node in self.nodes if node.should_count_number()])
+    
+    def _get_gear_ratio(self):
+        return sum([node.calculate_gear_ratio() for node in self.nodes if node.should_count_gear_ratio()])
+
+    def sum_of_parts(self, file_name: str, operation: Literal["parts", "gears"]) -> List[EngineNode]:
         file_path = self._get_file_path(file_name)
         with open(file_path, "r") as fd:
             lines = [line.replace("\n", "") for line in fd.readlines()]
-            nodes = self._generate_nodes(lines)
+            self._generate_nodes(lines)
             self._generate_adjency_lists()
-            return nodes
+            if operation == "parts": 
+                return self._get_valid_numbers()
+            if operation == "gears":
+                return self._get_gear_ratio()
+            
